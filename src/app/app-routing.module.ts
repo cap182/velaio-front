@@ -9,7 +9,8 @@ const routes: Routes = [
   {
     path: 'tasks/list',
     loadComponent: () => import('./task/views/task-list/task-list.component')
-  }
+  },
+  { path: '**', redirectTo: '/tasks/list' }
 ];
 
 @NgModule({

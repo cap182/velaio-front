@@ -1,5 +1,5 @@
 // task.service.ts
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Task } from '../models/models';
@@ -9,8 +9,8 @@ import { Task } from '../models/models';
 })
 export class TaskService {
   private apiUrl = 'http://localhost:3000/api/tasks';
-
-  constructor(private http: HttpClient) {}
+  
+  private http = inject(HttpClient)
 
   createTask(task: Task): Observable<Task> {
     const headers = new HttpHeaders({

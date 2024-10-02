@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { TaskService } from '../../../services/task.service'; // Servicio para cargar tareas
 import { Task } from '../../../models/models'; // Interfaz de Task
 import { CommonModule } from '@angular/common';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-task-list',
@@ -11,11 +12,14 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./task-list.component.css'],
 })
 export default class TaskListComponent implements OnInit {
+
+  private taskService = inject(TaskService)
+  private toastr = inject(ToastrService)
+  
   tasks: Task[] = [];
   filteredTasks: Task[] = []; // Tareas filtradas
   errorMessage: string | null = null;
 
-  constructor(private taskService: TaskService) {}
 
   ngOnInit(): void {
     this.loadTasks();
@@ -26,11 +30,13 @@ export default class TaskListComponent implements OnInit {
     this.taskService.getAllTasks().subscribe({
       next: (data: Task[]) => {
         this.tasks = data;
-        this.filteredTasks = data; // Mostrar todas las tareas por defecto
+        this.filteredTasks = data;
+        console.log('toaster', this.toastr);
+        
+        this.toastr.success('Tareas cargadas correctamente');
       },
-      error: (error) => {
-        this.errorMessage = 'Error al cargar las tareas';
-        console.error('Error al obtener las tareas:', error);
+      error: () => {        
+        this.toastr.error('Error al cargar las tareas');
       },
     });
   }

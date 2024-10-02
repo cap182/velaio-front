@@ -1,31 +1,29 @@
-<div class="container mx-auto py-8 w-4/5">
-    <!-- Mostrar mensaje de error si hay -->
-    <div *ngIf="errorMessage" class="text-red-500 text-lg font-semibold">
-      {{ errorMessage }}
-    </div>
+<div class="container mx-auto py-8 w-4/5">   
   
     <!-- Botones de filtrado -->
-    <div class="flex justify-center gap-4 mb-6">
+    <div class="flex flex-col sm:flex-row justify-center gap-4 mb-6">
         <strong class="py-2 text-white">Filtros:</strong>
         
         <!-- Botón de todas las tareas -->
-        <button (click)="filterTasks(null)" class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500">
+        <button (click)="filterTasks(null)" class="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500">
           Todas
           <span class="material-icons">ballot</span>
         </button>
         
         <!-- Botón de tareas completadas -->
-        <button (click)="filterTasks(true)" class="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-500">
+        <button (click)="filterTasks(true)" class="flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-500">
           Completadas
           <span class="material-icons">task_alt</span>
         </button>
         
         <!-- Botón de tareas pendientes -->
-        <button (click)="filterTasks(false)" class="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-500">
+        <button (click)="filterTasks(false)" class="flex items-center justify-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-500">
           Pendientes
           <span class="material-icons">pending_actions</span>
         </button>
       </div>
+      
+      
       
   
     <!-- Mostrar las tareas filtradas -->
