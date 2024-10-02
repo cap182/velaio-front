@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -14,6 +14,8 @@ import { TaskService } from '../../services/task.service'; // Servicio de tareas
 import { Task } from '../../models/models'; // Modelo de la tarea
 import { InputErrorComponent } from '../../shared/components/input-error/input-error.component';
 import { CustomValidators } from 'src/app/utils/validators';
+import { ToastrService } from 'ngx-toastr';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-task',
@@ -23,11 +25,16 @@ import { CustomValidators } from 'src/app/utils/validators';
   styleUrls: ['./task.component.css'],
 })
 export default class TaskComponent {
+  
+  private taskService = inject(TaskService) 
+  private toastr = inject(ToastrService)
+  private router= inject(Router) 
+
   taskForm: FormGroup;
   newSkill = new FormControl('');
   submitted = false;
 
-  constructor(private fb: FormBuilder, private taskService: TaskService) {
+  constructor(private fb: FormBuilder) {
     this.taskForm = this.fb.group({
       title: ['', Validators.required],
       limitDate: ['', [Validators.required, CustomValidators.minDateValidator]],
@@ -98,9 +105,11 @@ export default class TaskComponent {
       this.taskService.createTask(newTask).subscribe({
         next: (task) => {
           console.log('Tarea creada:', task);
+          this.toastr.success('Tarea guardada correctamente');
+          this.router.navigate(['/tasks/list']);
         },
-        error: (err) => {
-          console.error('Error al crear la tarea:', err);
+        error: () => {
+          this.toastr.error('Error al guardar la tarea');
         },
       });
     }
