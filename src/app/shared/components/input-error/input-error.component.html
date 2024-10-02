@@ -1,1 +1,4 @@
-<p>input-error works!</p>
+<div *ngIf="control && control.invalid && (control.dirty || control.touched || submitted)"
+    class="text-red-500 text-sm mt-1">
+    {{ getErrorMessage() }}
+</div>

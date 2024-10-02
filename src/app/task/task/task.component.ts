@@ -12,11 +12,13 @@ import {
 import { CommonModule } from '@angular/common';
 import { TaskService } from '../../services/task.service'; // Servicio de tareas
 import { Task } from '../../models/models'; // Modelo de la tarea
+import { InputErrorComponent } from '../../shared/components/input-error/input-error.component';
+import { CustomValidators } from 'src/app/utils/validators';
 
 @Component({
   selector: 'app-task',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, InputErrorComponent],
   templateUrl: './task.component.html',
   styleUrls: ['./task.component.css'],
 })
@@ -28,9 +30,9 @@ export default class TaskComponent {
   constructor(private fb: FormBuilder, private taskService: TaskService) {
     this.taskForm = this.fb.group({
       title: ['', Validators.required],
-      limitDate: ['', [Validators.required, this.minDateValidator]],
+      limitDate: ['', [Validators.required, CustomValidators.minDateValidator]],
       isCompleted: [false],
-      users: this.fb.array([], [this.atLeastOneValidator, this.noDuplicateUsers]), // Debe haber al menos un usuario
+      users: this.fb.array([], [CustomValidators.atLeastOneValidator, CustomValidators.noDuplicateUsers]), // Debe haber al menos un usuario
     });
   }
 
@@ -39,33 +41,12 @@ export default class TaskComponent {
     return this.taskForm.get('users') as FormArray;
   }
 
-  // Validación personalizada para evitar duplicados en nombres de usuario
-  noDuplicateUsers(control: AbstractControl) {
-    const formArray = control as FormArray;
-    const userNames = formArray.controls.map((userGroup: AbstractControl) => userGroup.get('userName')?.value.replaceAll(' ','').toLowerCase());
-    const duplicates = userNames.filter((name, index, array) => array.indexOf(name) !== index);
-
-    return duplicates.length > 0 ? { duplicateUsers: true } : null;
-  }
-  atLeastOneValidator(control: AbstractControl) {
-    const formArray = control as FormArray;
-    return formArray.length > 0 ? null : { atLeastOne: true };
-  }
-  minDateValidator(control: FormControl) {
-    const selectedDate = new Date(control.value);
-    const currentDate = new Date();
-    if (selectedDate < currentDate) {
-      return { minDate: true };
-    }
-    return null;
-  }
-
   // Crear un nuevo FormGroup para el usuario
   createUserGroup(): FormGroup {
     return this.fb.group({
-      userName: ['', Validators.required],
+      userName: ['', [Validators.required, Validators.minLength(5)]],
       userAge: ['', [Validators.required, Validators.min(18)]],
-      skills: this.fb.array([], this.atLeastOneValidator),
+      skills: this.fb.array([], CustomValidators.atLeastOneValidator),
     });
   }
 
