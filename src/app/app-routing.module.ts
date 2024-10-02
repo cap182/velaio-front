@@ -5,6 +5,10 @@ const routes: Routes = [
   {
     path: 'tasks',
     loadComponent: () => import('./task/task/task.component')
+  },
+  {
+    path: 'tasks/list',
+    loadComponent: () => import('./task/views/task-list/task-list.component')
   }
 ];
 
