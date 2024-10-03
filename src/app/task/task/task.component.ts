@@ -52,7 +52,7 @@ export default class TaskComponent implements OnInit {
           CustomValidators.atLeastOneValidator,
           CustomValidators.noDuplicateUsers,
         ]
-      ), // Debe haber al menos un usuario
+      ),
     });
   }
 
@@ -87,19 +87,11 @@ export default class TaskComponent implements OnInit {
     return this.taskForm.get('users') as FormArray;
   }
 
-  createUserGroup(): FormGroup {
-    return this.fb.group({
-      userName: ['', [Validators.required, Validators.minLength(5)]],
-      userAge: ['', [Validators.required, Validators.min(18)]],
-      skills: this.fb.array([], CustomValidators.atLeastOneValidator),
-    });
-  }
-
   addUser(userName = '', userAge: number = 0, skills: string[] = []): void {
     const userForm = this.fb.group({
-      userName: [userName, Validators.required],
+      userName: [userName, [Validators.required, Validators.minLength(5)]],
       userAge: [userAge, [Validators.required, Validators.min(18)]],
-      skills: this.fb.array(skills),
+      skills: this.fb.array(skills, CustomValidators.atLeastOneValidator),
     });
     this.users.push(userForm);
   }
