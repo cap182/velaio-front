@@ -17,10 +17,13 @@ export class TaskService {
       'Content-Type': 'application/json',
     });
 
-    return this.http.post<Task>(`${this.apiUrl}`, task, { headers });
+    return this.http.post<Task>(this.apiUrl, task, { headers });
   }
 
   getAllTasks(): Observable<Task[]> {
     return this.http.get<Task[]>(this.apiUrl);
+  }
+  getTaskById(id: string): Observable<Task> {
+    return this.http.get<Task>(`${this.apiUrl}/${id}`);
   }
 }
