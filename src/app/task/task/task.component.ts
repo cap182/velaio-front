@@ -26,7 +26,6 @@ import { ActivatedRoute, Router } from '@angular/router';
     InputErrorComponent,
   ],
   templateUrl: './task.component.html',
-  styleUrls: ['./task.component.css'],
 })
 export default class TaskComponent implements OnInit {
   private taskService = inject(TaskService);

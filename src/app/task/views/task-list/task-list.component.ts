@@ -12,7 +12,6 @@
       RouterModule 
     ],
     templateUrl: './task-list.component.html',
-    styleUrls: ['./task-list.component.css'],
   })
   export default class TaskListComponent implements OnInit {
 
