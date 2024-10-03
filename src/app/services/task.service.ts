@@ -9,15 +9,11 @@ import { Task } from '../models/models';
 })
 export class TaskService {
   private apiUrl = 'http://localhost:3000/api/tasks';
-  
-  private http = inject(HttpClient)
+
+  private http = inject(HttpClient);
 
   createTask(task: Task): Observable<Task> {
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/json',
-    });
-
-    return this.http.post<Task>(this.apiUrl, task, { headers });
+    return this.http.post<Task>(this.apiUrl, task);
   }
 
   getAllTasks(): Observable<Task[]> {
@@ -25,5 +21,8 @@ export class TaskService {
   }
   getTaskById(id: string): Observable<Task> {
     return this.http.get<Task>(`${this.apiUrl}/${id}`);
+  }
+  updateTask(taskData: Task): Observable<Task> {
+    return this.http.put<Task>(this.apiUrl, taskData);
   }
 }

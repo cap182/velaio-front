@@ -7,48 +7,86 @@ import {
   Validators,
   ReactiveFormsModule,
   FormsModule,
-  AbstractControl,
 } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { TaskService } from '../../services/task.service'; // Servicio de tareas
-import { Task } from '../../models/models'; // Modelo de la tarea
+import { TaskService } from '../../services/task.service';
+import { Task } from '../../models/models';
 import { InputErrorComponent } from '../../shared/components/input-error/input-error.component';
 import { CustomValidators } from 'src/app/utils/validators';
 import { ToastrService } from 'ngx-toastr';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-task',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, InputErrorComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    FormsModule,
+    InputErrorComponent,
+  ],
   templateUrl: './task.component.html',
   styleUrls: ['./task.component.css'],
 })
-export default class TaskComponent {
-  
-  private taskService = inject(TaskService) 
-  private toastr = inject(ToastrService)
-  private router= inject(Router) 
+export default class TaskComponent implements OnInit {
+  private taskService = inject(TaskService);
+  private toastr = inject(ToastrService);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   taskForm: FormGroup;
   newSkill = new FormControl('');
   submitted = false;
+  isEditing = false;
+  taskId: string | null = null;
 
   constructor(private fb: FormBuilder) {
     this.taskForm = this.fb.group({
+      taskId: [''],
       title: ['', Validators.required],
       limitDate: ['', [Validators.required, CustomValidators.minDateValidator]],
       isCompleted: [false],
-      users: this.fb.array([], [CustomValidators.atLeastOneValidator, CustomValidators.noDuplicateUsers]), // Debe haber al menos un usuario
+      users: this.fb.array(
+        [],
+        [
+          CustomValidators.atLeastOneValidator,
+          CustomValidators.noDuplicateUsers,
+        ]
+      ), // Debe haber al menos un usuario
     });
   }
 
-  // Obtener el FormArray de usuarios
+  ngOnInit(): void {
+    this.taskId = this.route.snapshot.paramMap.get('id');
+    if (this.taskId) {
+      this.isEditing = true;
+      this.loadTask(this.taskId);
+    }
+  }
+
+  loadTask(id: string): void {
+    this.taskService.getTaskById(id).subscribe({
+      next: (task: Task) => {
+        this.taskForm.patchValue({
+          taskId: task.taskId,
+          title: task.title,
+          limitDate: new Date(task.limitDate).toISOString().substring(0, 10),
+          isCompleted: task.isCompleted,
+        });
+        task.users.forEach((user) => {
+          this.addUser(user.userName, user.userAge, user.skills);
+        });
+      },
+      error: (err) => {
+        this.toastr.error('Error al cargar la tarea');
+      },
+    });
+  }
+
   get users(): FormArray {
     return this.taskForm.get('users') as FormArray;
   }
 
-  // Crear un nuevo FormGroup para el usuario
   createUserGroup(): FormGroup {
     return this.fb.group({
       userName: ['', [Validators.required, Validators.minLength(5)]],
@@ -57,12 +95,15 @@ export default class TaskComponent {
     });
   }
 
-  // Añadir un nuevo usuario al FormArray
-  addUser(): void {
-    this.users.push(this.createUserGroup());
+  addUser(userName = '', userAge: number = 0, skills: string[] = []): void {
+    const userForm = this.fb.group({
+      userName: [userName, Validators.required],
+      userAge: [userAge, [Validators.required, Validators.min(18)]],
+      skills: this.fb.array(skills),
+    });
+    this.users.push(userForm);
   }
 
-  // Remover un usuario del FormArray
   removeUser(index: number): void {
     this.users.removeAt(index);
   }
@@ -74,7 +115,7 @@ export default class TaskComponent {
   addSkill(userIndex: number): void {
     if (this.newSkill.value && this.newSkill.value.trim()) {
       this.getSkills(userIndex).push(new FormControl(this.newSkill.value));
-      this.newSkill.reset(); // Limpiar el input después de agregar la habilidad
+      this.newSkill.reset();
     }
   }
 
@@ -82,36 +123,32 @@ export default class TaskComponent {
     this.getSkills(userIndex).removeAt(skillIndex);
   }
 
-  // Método para manejar el envío del formulario
   onSubmit(): void {
     this.submitted = true;
     if (this.taskForm.valid) {
-      const formValue = this.taskForm.value;
-
-      // Crear el objeto Task
-      const newTask: Task = {
-        title: formValue.title,
-        limitDate: new Date(formValue.limitDate).getTime(), // Convertir la fecha a timestamp
-        isCompleted: formValue.isCompleted,
-        users: formValue.users.map((user: any) => ({
-          userName: user.userName,
-          userAge: user.userAge,
-          skills: user.skills,
-        })),
-      };
-      console.log('TASK!!', newTask);
-
-      // Llamada al servicio para crear la tarea
-      this.taskService.createTask(newTask).subscribe({
-        next: (task) => {
-          console.log('Tarea creada:', task);
-          this.toastr.success('Tarea guardada correctamente');
-          this.router.navigate(['/tasks/list']);
-        },
-        error: () => {
-          this.toastr.error('Error al guardar la tarea');
-        },
-      });
+      const taskData = this.taskForm.value;
+      taskData.limitDate = new Date(taskData.limitDate).getTime();
+      if (this.isEditing) {
+        this.taskService.updateTask(taskData).subscribe({
+          next: () => {
+            this.toastr.success('Tarea actualizada correctamente');
+            this.router.navigate(['/tasks/list']);
+          },
+          error: () => {
+            this.toastr.error('Error al actualizar la tarea');
+          },
+        });
+      } else {
+        this.taskService.createTask(taskData).subscribe({
+          next: () => {
+            this.toastr.success('Tarea creada correctamente');
+            this.router.navigate(['/tasks/list']);
+          },
+          error: () => {
+            this.toastr.error('Error al crear la tarea');
+          },
+        });
+      }
     }
   }
 }
